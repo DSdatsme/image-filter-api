@@ -13,21 +13,27 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
 
-  app.get( "/filteredimage/", async( req: Request, res: Response ) => {
+  app.get( "/filteredimage/", async ( req: Request, res: Response ) => {
     const image_url: string = req.query.image_url;
 
     // image basic validation
     if ( !image_url ) {
       return res.status(400)
-                .send(`image url is required`);
+                .send(`Image url is required`);
     }
 
-    // compress user's image
-    const compressedImagePath: string = await filterImageFromURL(image_url);
-    
-    res.sendFile(compressedImagePath, () =>
-        deleteLocalFiles([compressedImagePath])
+    try {
+      // compress user's image
+      const compressedImagePath: string = await filterImageFromURL(image_url);
+      
+      res.sendFile(compressedImagePath, () =>
+          deleteLocalFiles([compressedImagePath])
       );
+    }
+    catch(error) {
+      console.log(error);
+      res.sendStatus(422).send("Image url specified cannot be processed.");
+    }
   });
   
   // Root Endpoint
